@@ -1,4 +1,4 @@
-package org.example.pro3;
+package org.swea.pro3;
 // 반례 조건 : 능력 값이 높을수록 능력이 좋은 선수이다. 능력 값이 같다면 ID가 작을수록 더 능력이 좋은 선수
 // 정렬 nlogn
 // 4000log4000 = 48,000 x 10 =48만 x 1000 -> 5억 이상  절대 안됨

@@ -1,4 +1,4 @@
-package org.example.pro3;
+package org.swea.pro3;
 import java.util.Scanner;
 
 class Solution {

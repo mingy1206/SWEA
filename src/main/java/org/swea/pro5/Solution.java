@@ -1,4 +1,4 @@
-package org.example.pro5;
+package org.swea.pro5;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

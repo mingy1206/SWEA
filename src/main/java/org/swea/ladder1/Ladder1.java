@@ -1,4 +1,4 @@
-package org.example.swea;
+package org.swea.ladder1;
 import java.util.*;
 import java.io.*;
 public class Ladder1 {
