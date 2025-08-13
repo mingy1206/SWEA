@@ -1,26 +1,49 @@
 package org.swea.ladder1;
-import java.util.*;
-import java.io.*;
-public class Ladder1 {
-    public static void main(String[] args) throws IOException {
-        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-        StringTokenizer st;
-        int T = Integer.parseInt(br.readLine());
-        int[][] ladder = new int[100][100];
-        for(int test_case = 1; test_case <= T; test_case++)
-        {
-            for(int i = 0; i < 100; i++){
-                st = new StringTokenizer(br.readLine());
-                for(int j = 0; j <100; j++)
-                    ladder[i][j] = Integer.parseInt(st.nextToken());
+
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
+public class Solution {
+    static List<Integer> myCards;
+    static List<Integer> yourCards;
+    static boolean[] visited;
+    private static int totalWin;
+    private static int totalLose;
+    private static void game(int round, int myScore, int yourScore){
+        if(round >= 9){
+            if(myScore > yourScore) totalWin++;
+            if(myScore < yourScore) totalLose++;
+            return;
+        }
+        int myCardNum = myCards.get(round);
+        for(int i = 0; i < 9; i++){
+            if(!visited[i]){
+                int yourCardNum = yourCards.get(i);
+                visited[i] = true;
+                if(myCardNum > yourCardNum) game(round+1, myScore + myCardNum + yourCardNum, yourScore);
+                else game(round+1, myScore, yourScore + myCardNum + yourCardNum);
+                visited[i] = false;
             }
         }
     }
-    public int search(){
-
+    public static void main(String[] args) throws IOException {
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        int T = Integer.parseInt(br.readLine());
+        for(int t = 1; t <= T; t++){
+            visited = new boolean[9];
+            totalWin = 0;
+            totalLose = 0;
+            String[] stringMyCards = br.readLine().split(" ");
+            myCards = new ArrayList<>();
+            yourCards = new ArrayList<>();
+            for(String card : stringMyCards) myCards.add(Integer.parseInt(card));
+            for(int i = 1; i <= 18; i++) if(!myCards.contains(i)) yourCards.add(i);
+            game(0,0,0);
+            System.out.println("#"+ t + " " + totalWin + " " + totalLose);
+        }
     }
-
-
 }
 
 /*
