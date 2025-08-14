@@ -5,7 +5,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.Arrays;
 import java.util.StringTokenizer;
-public class Solution {
+public class
+Solution {
     private static int N;
     private static int B;
     private static int[] P;
