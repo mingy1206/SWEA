@@ -33,15 +33,17 @@ public class Solution {
             best_taste = 0;
             for(int i = 1; i <= N; i++){
                 int[] arr =new int[N];
-                for(int j = i; j <= N; j++) arr[N-j] = 1;
+                for(int j = 0; j < i; j++) arr[N-1-j] = 1;
                 do{
                     int taste = 0;
                     int kcal = 0;
-                    for(int k = 1; k <= i; k++){
-                        taste += T[k];
-                        kcal += K[k];
+                    for(int k = 0; k < N; k++){
+                        if(arr[k] == 1){
+                            taste += T[k];
+                            kcal += K[k];
+                        }
                     }
-                    if(kcal < L) best_taste = Math.max(taste, best_taste);
+                    if(kcal <= L) best_taste = Math.max(taste, best_taste);
                 }while (np(arr));
             }
 
@@ -50,16 +52,19 @@ public class Solution {
         }
     }
     public static boolean np(int[] arr){
-        int i = arr.length - 1;
-        while (i >= 0 && arr[i] == 1) i--;
-        if(i==0) return false;
+        int top = arr.length - 1;
+        while (top > 0 && arr[top-1] >= arr[top]) top--;
+        if(top<=0) return false;
 
-        swap(arr, i, i+1);
-        int j = arr.length - 1;
-        while (i <= j){
-            swap(arr, i, j);
-            i++;
-            j--;
+        int end = arr.length - 1;
+        while(arr[top-1] >= arr[end]) end--;
+        swap(arr, top-1, end);
+
+        end = arr.length - 1;
+        while (top <= end){
+            swap(arr, top, end);
+            top++;
+            end--;
         }
         return true;
     }
