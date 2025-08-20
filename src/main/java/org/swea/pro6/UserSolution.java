@@ -37,7 +37,7 @@ class UserSolution {
             Map HM = hashMapList.get(i);
             Map TM;
             if(HM.containsKey(mParent)){
-                if(HM.get(mParent) >= )
+                //if(HM.get(mParent) >= )
                 TM = treeMapList.get(i);
                 TM.put(mId,mNum);
             }
