@@ -34,6 +34,7 @@ public class Solution {
     private static List<BC> BCList;
     private static boolean[] using;
     private static int[][] room;
+    private static int[][] directions = {{0,-1}, {0,1}, {-1,0}, {0,1}};
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
@@ -66,11 +67,20 @@ public class Solution {
                 BCList.add(new BC(BCInfo[0], BCInfo[1], BCInfo[2], BCInfo[3]));
 
             }
+            for(BC bc : BCList){
+                int x = bc.x;
+                int y = bc.y;
 
+            }
         }
     }
     
-    private static void roomSetting(){
+    private static void roomSetting(int x, int y){
+            for(int[] direction : directions){
+                int nx = x + direction[0];
+                int ny = y + direction[1];
+
+            }
 
     }
 }
