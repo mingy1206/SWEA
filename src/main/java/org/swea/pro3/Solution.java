@@ -30,14 +30,12 @@ class Solution {
             } else if (query == CMD_MOVE) {
                 int ret = usersolution.move();
                 ans = sc.nextInt();
-                System.out.println(ret+" "+ans);
                 if (ans != ret) {
                     ok = false;
                 }
             } else if (query == CMD_TRADE) {
                 int ret = usersolution.trade();
                 ans = sc.nextInt();
-                System.out.println(ret+" "+ans);
                 if (ans != ret) {
                     ok = false;
                 }
@@ -49,7 +47,7 @@ class Solution {
     public static void main(String[] args) throws Exception {
         int T, MARK;
 
-        System.setIn(new java.io.FileInputStream("C:\\ssafy\\scam\\algo\\SWEA\\src\\main\\resources\\sample_input.txt"));
+        System.setIn(new java.io.FileInputStream("C:\\ssafy\\scam\\algo\\SWEA\\src\\main\\java\\org\\swea\\pro3\\sample_input.txt"));
         sc = new Scanner(System.in);
         T = sc.nextInt();
         MARK = sc.nextInt();
