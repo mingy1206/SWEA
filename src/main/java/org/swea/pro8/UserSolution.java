@@ -59,7 +59,7 @@ class UserSolution {
                         originalList.addAll(newList);
                         Users.put(subscriber, originalList);
                     }
-                    News.put()
+//                    News.put()
                 }
             }
         }
