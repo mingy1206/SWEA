@@ -1,166 +1,146 @@
 package org.swea.pro8;
+
 import java.util.*;
+
 class UserSolution {
-    private static int N;
-    private static int K;
+    // [수정] 채널 구독자를 중복이 불가능한 Set으로 변경
+    private Map<Integer, Set<Integer>> channelSubscribers;
+    private TreeMap<Integer, TreeSet<newsMetaData>> reservationNews;
+    private Map<Integer, List<Integer>> userNotifications;
+    private Map<Integer, Integer> newsReservationTime;
+    private Map<Integer, List<Integer>> newsReceivedBy;
 
-    private static Map<Integer, List<Integer>> ChannelSubscribe;
-    private static Map<Integer, List<Integer>> Channels;
-
-    private static TreeMap<Integer, List<Integer>> reservation;
-    private static Map<Integer, List<Integer>> Users;
-    private static Map<Integer, List<Integer>> News;
-    class newsMetaData{
-        int mTime;
-        int mDelay;
-        int reservationTime;
+    // [수정] newsMetaData 클래스 간소화
+    class newsMetaData implements Comparable<newsMetaData> {
+        int mNewsID;
         int mChannelID;
-        newsMetaData(int mTime, int mDelay, int mChannelID){
-            this.mTime = mTime;
-            this.mDelay = mDelay;
-            this.reservationTime = mTime + mDelay;
+
+        newsMetaData(int mNewsID, int mChannelID) {
+            this.mNewsID = mNewsID;
             this.mChannelID = mChannelID;
         }
+
+        @Override
+        public int hashCode() { return Objects.hash(mNewsID); }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            newsMetaData nmd = (newsMetaData) o;
+            return mNewsID == nmd.mNewsID;
+        }
+
+        @Override
+        public int compareTo(newsMetaData o) {
+            return o.mNewsID - this.mNewsID; // 뉴스 ID 내림차순 정렬
+        }
     }
-    void init(int N, int K)
-    {
-        this.N = N;
-        this.K = K;
-        ChannelSubscribe = new HashMap<>();
-        Channels = new HashMap<>();
-        reservation = new TreeMap<>();
-        Users = new HashMap<>();
-        News = new HashMap<>();
-    }
 
-    void registerUser(int mTime, int mUID, int mNum, int mChannelIDs[])
-    {
-        // reservation mTime 먼저 실행
+    private void processPendingNews(int mTime) {
+        // 안전한 순회를 위해 처리할 키(시간) 목록을 미리 복사
+        List<Integer> timesToProcess = new ArrayList<>(reservationNews.headMap(mTime, true).keySet());
 
-        // 예약 시간별 보내야하는 채널들 추출
-        for (Map.Entry<Integer, List<Integer>> entry : reservation.headMap(mTime, true).entrySet()){
+        for (Integer time : timesToProcess) {
+            TreeSet<newsMetaData> newsSet = reservationNews.get(time);
+            if (newsSet == null) continue;
 
-            List<Integer> channelList = entry.getValue(); // 채널과 채널이 가지고 있는 구독자들
+            for (newsMetaData nmd : newsSet) {
+                Set<Integer> subscribers = channelSubscribers.getOrDefault(nmd.mChannelID, Collections.emptySet());
 
-            // 채널들을 구독하는 유저들 추출
-            for(int channel : channelList){
+                newsReceivedBy.put(nmd.mNewsID, new ArrayList<>(subscribers));
 
-                List<Integer> subcribers = ChannelSubscribe.get(channel); //구독자들
 
-                // 유저별로 채널이 가지고 있는 뉴스들 넣어주기
-                for(int subscriber : subcribers){
-
-                    List<Integer> newList = new ArrayList<>(Channels.get(channel)); // 뉴스 목록들
-                    if(!Users.containsKey(subscriber)){
-                        Users.put(subscriber, newList);
-                    }
-                    else{
-                        List<Integer> originalList = new ArrayList<>(Channels.get(channel));
-                        originalList.addAll(newList);
-                        Users.put(subscriber, originalList);
-                    }
-//                    News.put()
+                for (int subscriberID : subscribers) {
+                    userNotifications.computeIfAbsent(subscriberID, k -> new ArrayList<>()).add(nmd.mNewsID);
                 }
             }
+            reservationNews.remove(time);
         }
+    }
 
-        reservation = new TreeMap<>(reservation.tailMap(mTime, false));
+    public void init(int N, int K) {
+        channelSubscribers = new HashMap<>();
+        reservationNews = new TreeMap<>();
+        userNotifications = new HashMap<>();
+        newsReservationTime = new HashMap<>();
+        newsReceivedBy = new HashMap<>();
+    }
 
-        // 새로 채널 구독하는 유저들 저장
-        for(int channelID : mChannelIDs){
-            if(!ChannelSubscribe.containsKey(channelID)){
-                List<Integer> list = new ArrayList<>();
-                list.add(mUID);
-                ChannelSubscribe.put(channelID, list);
+    public void registerUser(int mTime, int mUID, int mNum, int[] mChannelIDs) {
+        processPendingNews(mTime);
+        for (int i = 0; i < mNum; i++) {
+            // [수정] Set에 구독자를 추가 (중복 자동 처리)
+            channelSubscribers.computeIfAbsent(mChannelIDs[i], k -> new HashSet<>()).add(mUID);
+        }
+    }
+
+    public int offerNews(int mTime, int mNewsID, int mDelay, int mChannelID) {
+        processPendingNews(mTime);
+        int reservationTime = mTime + mDelay;
+        newsReservationTime.put(mNewsID, reservationTime);
+        reservationNews.computeIfAbsent(reservationTime, k -> new TreeSet<>()).add(new newsMetaData(mNewsID, mChannelID));
+
+        return channelSubscribers.getOrDefault(mChannelID, Collections.emptySet()).size();
+    }
+
+    public void cancelNews(int mTime, int mNewsID) {
+        processPendingNews(mTime);
+        if (!newsReservationTime.containsKey(mNewsID)) return;
+
+        int reservationTime = newsReservationTime.get(mNewsID);
+
+        if (reservationTime > mTime) { // 아직 발송되지 않은 뉴스
+            TreeSet<newsMetaData> newsSet = reservationNews.get(reservationTime);
+            if (newsSet != null) {
+                newsSet.remove(new newsMetaData(mNewsID, 0));
+                if (newsSet.isEmpty()) {
+                    reservationNews.remove(reservationTime);
+                }
             }
-            else{
-                List list = ChannelSubscribe.get(channelID);
-                list.add(mUID);
-                ChannelSubscribe.put(channelID, list);
-            }
-        }
-        // 해당 시간 알림 처리 구현 나중에
-    }
-
-    int offerNews(int mTime, int mNewsID, int mDelay, int mChannelID)
-    {
-        // 채널들이 가지고 있는 뉴스 저장
-        if(!Channels.containsKey(mNewsID)){
-            List<Integer> list = new ArrayList<>();
-            list.add(mNewsID);
-            Channels.put(mChannelID, list);
-        }
-        else{
-            List list = Channels.get(mChannelID);
-            list.add(mNewsID);
-            ChannelSubscribe.put(mChannelID, list);
-        }
-
-        //시간별 전송해야할 채널들 저장
-        int time = mTime+mDelay;
-        if(!reservation.containsKey(time)){
-            List<Integer> list = new ArrayList<>();
-            list.add(mChannelID);
-            Channels.put(mChannelID, list);
-        }
-        else{
-            List list = Channels.get(time);
-            list.add(mChannelID);
-            ChannelSubscribe.put(time, list);
-        }
-
-
-
-        return ChannelSubscribe.get(mChannelID).size();
-    }
-
-    void cancelNews(int mTime, int mNewsID)
-    {
-        // 예약을 아예 취소
-        reservation.remove(mTime);
-        // mNewsID도 삭제하기
-        Channels.remove(mNewsID);
-
-    }
-
-    int checkUser(int mTime, int mUID, int mRetIDs[])
-    {
-        // reservation mTime 먼저 실행
-
-        // 예약 시간별 보내야하는 채널들 추출
-        for (Map.Entry<Integer, List<Integer>> entry : reservation.headMap(mTime, true).entrySet()){
-
-            List<Integer> channelList = entry.getValue(); // 채널과 채널이 가지고 있는 구독자들
-
-            // 채널들을 구독하는 유저들 추출
-            for(int channel : channelList){
-
-                List<Integer> subcribers = ChannelSubscribe.get(channel); //구독자들
-
-                // 유저별로 채널이 가지고 있는 뉴스들 넣어주기
-                for(int subscriber : subcribers){
-
-                    List<Integer> newList = new ArrayList<>(Channels.get(channel));
-
-                    if(!Users.containsKey(subscriber)){
-                        Users.put(subscriber, newList);
-                    }
-                    else{
-                        List<Integer> originalList = new ArrayList<>(Channels.get(channel));
-                        originalList.addAll(newList);
-                        Users.put(subscriber, originalList);
+            newsReservationTime.remove(mNewsID);
+            newsReceivedBy.remove(mNewsID);
+        } else { // 이미 발송된 뉴스
+            List<Integer> receivedUsers = newsReceivedBy.get(mNewsID);
+            if (receivedUsers != null) {
+                for (int userID : receivedUsers) {
+                    List<Integer> notifications = userNotifications.get(userID);
+                    if (notifications != null) {
+                        notifications.remove(Integer.valueOf(mNewsID));
                     }
                 }
             }
+            newsReceivedBy.remove(mNewsID);
+        }
+    }
+
+    public int checkUser(int mTime, int mUID, int[] mRetIDs) {
+        processPendingNews(mTime);
+
+        List<Integer> newsList = userNotifications.get(mUID);
+
+        if (newsList == null || newsList.isEmpty()) {
+            return 0;
         }
 
+        // [수정] 문제의 '최신순' 조건에 맞게 정렬 로직 변경
+        newsList.sort((id1, id2) -> {
+            int time1 = newsReservationTime.get(id1);
+            int time2 = newsReservationTime.get(id2);
+            if (time1 != time2) {
+                return Integer.compare(time2, time1); // 1. 시간 내림차순
+            }
+            return Integer.compare(id2, id1); // 2. 시간이 같으면 ID 내림차순
+        });
 
-        return -1;
+        int returnCount = Math.min(newsList.size(), 3);
+
+        for (int i = 0; i < returnCount; i++) {
+            mRetIDs[i] = newsList.get(i);
+        }
+
+        userNotifications.remove(mUID);
+
+        return newsList.size(); // [수정] 반환값은 '전체' 받은 알림 개수여야 함
     }
 }
-// 이게 결국 시간마다 돌아가는 로직이 없으니까
-// 특정 로직에서 해당 시간까지의 알림을 전송했다는 로직을 구현하는 것?
-// 그러면 reservation에서 mTime까지의 로직을 모두 알림함으로 전송하고 처리
-// 따라서 reservation의 mTime 이하의 값들을 쉽게 찾을 수 있고 없앨 수 있어야 함.
-// 그러면 mTime을 해야할 때마다 특정 값 이하의 트리셋을 뽑아서 알림함에 넣고
-// 특정 값 이상을 새로운 reservation의 셋으로

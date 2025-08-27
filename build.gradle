@@ -17,3 +17,14 @@ dependencies {
 test {
     useJUnitPlatform()
 }
+
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
+}
+
+task execute(type: JavaExec) {
+    if (project.hasProperty('mainClass')) {
+        main = project.property('mainClass')
+    }
+    classpath = sourceSets.main.runtimeClasspath
+}
