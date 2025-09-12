@@ -1,96 +1,82 @@
 package org.swea.원자소멸시뮬레이션;
 
+import java.awt.*;
 import java.io.*;
+import java.nio.Buffer;
 import java.util.*;
+import java.util.List;
 
 // 가로나 세로 거리 중 더 거리가 멀리 떨어져 있는 횟수 만큼 반복
 public class Solution {
     private static final int[][] directions = {{0,1},{0,-1},{-1,0},{1,0}};//상하좌우 (dx,dy)로 저장
-
     static class Atom{
-        private int id, x, y, dir, energy;
-        boolean isAlive = true;
-
-        Atom(int id, int x, int y, int dir, int energy){
-            this.id = id; this.x = x; this.y = y; this.dir = dir; this.energy = energy;
-        }
-
-    }
-    static class Event implements  Comparable<Event>{
-        int time;
-        int atom1, atom2;
-        Event(int time, int atom1, int atom2){
-            this.time = time; this.atom1 =atom1; this.atom2 = atom2;
-        }
-        @Override
-        public int compareTo(Event e){
-            return this.time - e.time;
+        int x, y, energy, dir;
+        boolean isAlive;
+        Atom(int x, int y, int dir, int energy){
+            this.x = x; this.y = y; this.dir = dir; this. energy = energy;
+            isAlive = true;
         }
     }
-
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
-        int T= Integer.parseInt(br.readLine());
-
-        for(int t = 1; t<= T; t++){
-            int result = 0;
+        int T = Integer.parseInt(br.readLine());
+        for(int t = 1; t<=T; t++){
+            int totalEnergy = 0;
             int N = Integer.parseInt(br.readLine());
             Atom[] atoms = new Atom[N];
-            for(int i = 0; i < N; i++){
+            for (int i=0; i<N; i++){
                 st = new StringTokenizer(br.readLine());
-                atoms[i] = new Atom(new Point(Integer.parseInt(st.nextToken())*2,Integer.parseInt(st.nextToken())*2),
+                atoms[i] = new Atom(Integer.parseInt(st.nextToken())*2, Integer.parseInt(st.nextToken())*2,
                         Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
             }
-            PriorityQueue<Event> pq = new PriorityQueue<>();
 
-            int maxLength = 0;
-            for (int i = 0; i < N; i++){
-                Point now  = atomics[i].point;
-                for(int j = i+1; j < N; j++){
-                    Point next = atomics[j].point;
-                    int length = Math.max(Math.abs(now.x - next.x), Math.abs(now.y - next.y));
-                    maxLength = Math.max(maxLength, length);
+
+            boolean endFlag = true;
+            while (endFlag){
+                Map<Integer, List<Integer>> explosionMap = new HashMap<>();
+                int aliveCount = N;
+                for(int i=0; i<N; i++){
+                    Atom atom = atoms[i];
+                    if (!atom.isAlive){
+                        aliveCount--;
+                        continue;
+                    }
+                    int[] direction = directions[atom.dir];
+                    int nx = atom.x + direction[0];
+                    int ny = atom.y + direction[1];
+
+                    if(nx >2000 || ny > 2000 || nx < -2000 || ny < -2000){
+                        atoms[i].isAlive = false;
+                        aliveCount--;
+                        continue;
+                    }
+                    atoms[i].x = nx;
+                    atoms[i].y = ny;
+
+                    int index = (nx + 2000) * 4001 + (ny + 2000);
+                    List<Integer> explosionList = explosionMap.getOrDefault(index, new ArrayList<Integer>());
+                    explosionList.add(i);
+                    explosionMap.put(index, explosionList);
                 }
-
+                for(List<Integer> explosionList : explosionMap.values()){
+                    if(explosionList.size() <= 1) continue;
+                    for (int index : explosionList){
+                        totalEnergy += atoms[index].energy;
+                        atoms[index].isAlive = false;
+                        aliveCount--;
+                    }
+                }
+                if(aliveCount == 0) endFlag = false;
             }
 
-            for (int i = 0; i<maxLength; i++){
-                Map<Point, List<Integer>> pointMap = new HashMap<>();
-                for (int j = 0; j < N; j++){
-                    Atomic atomic = atomics[j];
-                    if(!atomic.exist) continue;
-                    int[] direction = directions[atomic.direction];
-                    atomics[j].setPoint(atomic.point.x + direction[0], atomic.point.y + direction[1]);
+            System.out.println("#" + t + " " + totalEnergy);
 
 
-                    List<Integer> list;
-                    if(pointMap.containsKey(atomics[j].point)){
-                        list = pointMap.get(atomics[j].point);
-                        list.add(j);
-                    }
-                    else{
-                        list = new ArrayList<>();
-                        list.add(j);
-                    }
-                    pointMap.put(atomics[j].point, list);
-                }
 
-                for(List<Integer> list : pointMap.values()){
-                    if(list.size() <= 1) continue;
 
-                    for(int index : list){
-                        Atomic atomic = atomics[index];
-                        result += atomic.energe;
-                        atomics[index].setExist(false);
-                    }
-                }
-
-            }
-            System.out.println("#" + t + " " + result);
 
         }
-
     }
 }
 /*
