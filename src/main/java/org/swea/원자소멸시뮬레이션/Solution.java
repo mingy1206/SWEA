@@ -1,12 +1,5 @@
 package org.swea.원자소멸시뮬레이션;
 
-<<<<<<< Updated upstream
-import java.awt.*;
-import java.io.*;
-import java.nio.Buffer;
-import java.util.*;
-import java.util.List;
-=======
 import java.awt.Point;
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -16,18 +9,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
->>>>>>> Stashed changes
 
 public class Solution {
-<<<<<<< Updated upstream
-    private static final int[][] directions = {{0,1},{0,-1},{-1,0},{1,0}};//상하좌우 (dx,dy)로 저장
-    static class Atom{
-        int x, y, energy, dir;
-        boolean isAlive;
-        Atom(int x, int y, int dir, int energy){
-            this.x = x; this.y = y; this.dir = dir; this. energy = energy;
-            isAlive = true;
-=======
 
     // 수정: 배열/행렬 좌표계에 맞게 방향 재정의 {y변화량, x변화량}
     // 0:상(y--), 1:하(y++), 2:좌(x--), 3:우(x++)
@@ -41,65 +24,13 @@ public class Solution {
             this.x = x;
             this.dir = dir;
             this.energy = energy;
->>>>>>> Stashed changes
         }
     }
+
     public static void main(String[] args) throws IOException {
         BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
         StringTokenizer st;
         int T = Integer.parseInt(br.readLine());
-<<<<<<< Updated upstream
-        for(int t = 1; t<=T; t++){
-            int totalEnergy = 0;
-            int N = Integer.parseInt(br.readLine());
-            Atom[] atoms = new Atom[N];
-            for (int i=0; i<N; i++){
-                st = new StringTokenizer(br.readLine());
-                atoms[i] = new Atom(Integer.parseInt(st.nextToken())*2, Integer.parseInt(st.nextToken())*2,
-                        Integer.parseInt(st.nextToken()), Integer.parseInt(st.nextToken()));
-            }
-
-
-            boolean endFlag = true;
-            while (endFlag){
-                Map<Integer, List<Integer>> explosionMap = new HashMap<>();
-                int aliveCount = N;
-                for(int i=0; i<N; i++){
-                    Atom atom = atoms[i];
-                    if (!atom.isAlive){
-                        aliveCount--;
-                        continue;
-                    }
-                    int[] direction = directions[atom.dir];
-                    int nx = atom.x + direction[0];
-                    int ny = atom.y + direction[1];
-
-                    if(nx >2000 || ny > 2000 || nx < -2000 || ny < -2000){
-                        atoms[i].isAlive = false;
-                        aliveCount--;
-                        continue;
-                    }
-                    atoms[i].x = nx;
-                    atoms[i].y = ny;
-
-                    int index = (nx + 2000) * 4001 + (ny + 2000);
-                    List<Integer> explosionList = explosionMap.getOrDefault(index, new ArrayList<Integer>());
-                    explosionList.add(i);
-                    explosionMap.put(index, explosionList);
-                }
-                for(List<Integer> explosionList : explosionMap.values()){
-                    if(explosionList.size() <= 1) continue;
-                    for (int index : explosionList){
-                        totalEnergy += atoms[index].energy;
-                        atoms[index].isAlive = false;
-                        aliveCount--;
-                    }
-                }
-                if(aliveCount == 0) endFlag = false;
-            }
-
-            System.out.println("#" + t + " " + totalEnergy);
-=======
 
         for (int test_case = 1; test_case <= T; test_case++) {
             int N = Integer.parseInt(br.readLine());
@@ -112,50 +43,50 @@ public class Solution {
                 int dir = Integer.parseInt(st.nextToken());
                 int energy = Integer.parseInt(st.nextToken());
 
-                // 수정: 불필요한 convertedDir 변수 및 로직 제거
+                // (y, x) 좌표 순서로 Atom 객체 생성
                 atomList.add(new Atom(y, x, dir, energy));
             }
 
-            long answer = 0;
->>>>>>> Stashed changes
+            long answer = 0; // 에너지 총합은 long 타입이 안전
 
+            // 시뮬레이션: 원자가 1개 이하로 남을 때까지 반복
             while (atomList.size() > 1) {
                 Map<Point, List<Atom>> map = new HashMap<>();
 
-<<<<<<< Updated upstream
-
-
-=======
+                // 1. 모든 원자 이동
                 for (Atom atom : atomList) {
-                    // 수정: atom.dir을 직접 사용
                     int ny = atom.y + directions[atom.dir][0];
                     int nx = atom.x + directions[atom.dir][1];
 
+                    // 2. 맵 범위를 벗어난 원자는 소멸 (map에 추가하지 않음)
                     if (ny < -2000 || ny > 2000 || nx < -2000 || nx > 2000) {
                         continue;
                     }
 
+                    // 3. 다음 위치(Point)를 기준으로 map에 추가
                     map.computeIfAbsent(new Point(ny, nx), k -> new ArrayList<>()).add(new Atom(ny, nx, atom.dir, atom.energy));
                 }
 
-                List<Atom> nextAtomList = new ArrayList<>();
+                List<Atom> nextAtomList = new ArrayList<>(); // 다음 턴에 살아남을 원자 리스트
 
+                // 4. 충돌 처리
                 for (List<Atom> group : map.values()) {
                     if (group.size() > 1) {
+                        // 2개 이상 모였으면 충돌
                         for (Atom atom : group) {
                             answer += atom.energy;
                         }
                     } else {
+                        // 1개만 있으면 생존
                         nextAtomList.add(group.get(0));
                     }
                 }
 
+                // 5. 다음 시뮬레이션을 위해 리스트 교체
                 atomList = nextAtomList;
             }
->>>>>>> Stashed changes
 
             System.out.println("#" + test_case + " " + answer);
         }
     }
 }
-
