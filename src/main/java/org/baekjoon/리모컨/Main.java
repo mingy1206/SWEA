@@ -24,71 +24,51 @@ public class Main {
         N = Integer.parseInt(br.readLine());
         M = Integer.parseInt(br.readLine());
         brokenButtons = new int[M];
-        st = new StringTokenizer(br.readLine());
-        for(int i = 0; i < M; i++) brokenButtons[i] = Integer.parseInt(st.nextToken());
+        if(M>0){
+            st = new StringTokenizer(br.readLine());
+            for(int i = 0; i < M; i++) brokenButtons[i] = Integer.parseInt(st.nextToken());
+        }
+
         if(N == 100){
             System.out.println(0);
         }else{
             int simple = Math.abs(N - 100);
             int left = left();
             int right = right();
-            System.out.println("simple: " + simple);
-            System.out.println("left: " + left);
-            System.out.println("right: " + right);
+            System.out.println(Math.min(Math.min(simple,left),right));
+//            System.out.println("simple: " + simple);
+//            System.out.println("left: " + left);
+//            System.out.println("right: " + right);
         }
+    }
+
+    private static boolean canPress(int point) {
+        String pointStr = String.valueOf(point);
+
+        for(int i = 0; i < pointStr.length(); i++) {
+            int digit = pointStr.charAt(i) - '0';
+            for(int bb : brokenButtons) {
+                if(digit == bb) return false;
+            }
+        }
+        return true;
     }
 
     private static int left(){
-        int point = N;
-        int left = 0;
-        while(point >= 0){
-            String pointStr = String.valueOf(point);
-            boolean flag = false;
-            for(int bb :  brokenButtons){
-                for(int i = 0; i < pointStr.length(); i++){
-                    if(pointStr.charAt(i) == bb) break;
-                    else flag = true;
-                }
-                if(!flag) break;
+        for(int point = N; point >= 0; point--){
+            if(canPress(point)){
+                return String.valueOf(point).length() + (N - point);
             }
-            if(flag){
-                System.out.println(left);
-                left = pointStr.length() + Math.abs(N-point);
-                return left;
-            }
-            else{
-                point--;
-            }
-
         }
-        return left;
+        return Integer.MAX_VALUE;
     }
 
     private static int right(){
-        int point = N;
-        int right = 0;
-        while(point <= 500000){
-            String pointStr = String.valueOf(point);
-            boolean flag = false;
-            for(int bb :  brokenButtons){
-                for(int i = 0; i < pointStr.length(); i++){
-                    System.out.println(pointStr.charAt(i)+" "+ bb);
-                    if(pointStr.charAt(i) == bb) break;
-                    else flag = true;
-                }
-                if(!flag) break;
+        for(int point = N; point <= 1000000; point++){
+            if(canPress(point)){
+                return String.valueOf(point).length() + (point - N);
             }
-            if(flag){
-                System.out.println(right);
-                right = pointStr.length() + Math.abs(N-point);
-                return right;
-            }
-            else{
-                point++;
-            }
-
         }
-        return right;
+        return Integer.MAX_VALUE;
     }
-
 }
