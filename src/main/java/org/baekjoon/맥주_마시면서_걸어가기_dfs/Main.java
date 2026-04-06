@@ -1,9 +1,8 @@
-package org.baekjoon.맥주_마시면서_걸어가기;
+package org.baekjoon.맥주_마시면서_걸어가기_dfs;
 
 import java.awt.*;
 import java.util.*;
 import java.io.*;
-import java.util.List;
 
 public class Main {
     static int[][] directions = {{0,1},{0,1},{-1,0},{0,-1}};
