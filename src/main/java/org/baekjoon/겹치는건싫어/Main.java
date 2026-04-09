@@ -1,3 +1,5 @@
+package org.baekjoon.겹치는건싫어;
+
 import java.util.*;
 import java.io.*;
 
